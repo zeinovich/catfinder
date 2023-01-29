@@ -1,1 +1,6 @@
 funcs.py
+.env
+config.json
+*.jpg
+*.png
+image_buff/
