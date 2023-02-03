@@ -32,11 +32,9 @@ def preprocess(image_path='image_buff/image.jpg'):
     image = image / 255.0
     return image.reshape(1, config.IMG_SIZE, config.IMG_SIZE, 3)
 
-def get_prediction_message(prediction, max_class):
-    message = 'Best 5 predictions:\n\n'
-    for i in range(len(max_class)):
-        message += f'{i+1}. {max_class[i]}: {prediction[i] * 100:.2f}%\n'
-    return message
+def get_prediction_message(prediction):
+    return (f"There's a cat with {prediction * 100:.2f}% probability\n" if prediction > 0.5 
+    else f"There's no cat with {(1 - prediction) * 100:.2f}% probability\n")
 
 def main():
     print(os.getcwd())
@@ -48,7 +46,7 @@ def main():
     classes = get_classes()
     bot = telebot.TeleBot(config.BOT_TOKEN)
 
-    model = keras.applications.MobileNetV2(input_shape=(config.IMG_SIZE, config.IMG_SIZE, 3), include_top=True, weights='imagenet')
+    model = keras.models.load_model(config.MODEL_PATH)
 
     #BOT CODE
     @bot.message_handler(commands=['start'])
@@ -70,12 +68,9 @@ def main():
         
         image = preprocess()
 
-        prediction = model.predict(image)[0]
-        best5_classes  = np.argpartition(prediction, -5)[-5:]
-        max_classes = [classes[str(i)] for i in best5_classes]
-        prediction = prediction[best5_classes]
+        prediction = model.predict(image)[0][0]
 
-        bot.reply_to(message, get_prediction_message(prediction, max_classes))
+        bot.reply_to(message, get_prediction_message(prediction))
 
     bot.polling()
 
