@@ -5,3 +5,4 @@ config.json
 *.png
 image_buff/
 data/
+logs/
