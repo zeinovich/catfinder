@@ -107,7 +107,7 @@ def get_bboxes(input_image, class_name):
     pass
 
 def get_prediction_message(proba: float, class_name: str) -> str:
-    msg = f"I think it's {class_name} ({proba * 100:.2f}%)"
+    msg = f"I think it's {class_name.capitalize()} ({proba * 100:.2f}%)"
     logging.debug(f'Pred message: {msg}')
 
     return msg
