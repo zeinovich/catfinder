@@ -113,7 +113,7 @@ def get_prediction_message(proba: float, class_name: str) -> str:
     return msg
 
 def main():
-    logger = get_logg()
+    logger = get_logg(logging.DEBUG)
     logger.info('Logger initialized')
     
     logger.info(f'Dir: {os.getcwd()}')
@@ -156,6 +156,11 @@ def main():
     def got_predict(message):
         bot.reply_to(message, "Send a picture")
 
+    @bot.message_handler(commands=['breeds'])
+    def breeds(message):
+        repl_text = '\n'.join(classes.values())
+        bot.reply_to(message, repl_text)
+        
     @bot.message_handler(content_types=['photo'])
     def predict(message):
         logging.info('Bot got image')
@@ -185,7 +190,8 @@ def main():
             logging.debug(f'class_name: {class_name}')
 
             logging.info('Bot sending message')
-            bot.reply_to(message, get_prediction_message(m_proba, class_name))
+            reply_msg = get_prediction_message(m_proba, class_name)
+            bot.reply_to(message, reply_msg)
             logging.info('Message sent')
 
     bot.polling()
