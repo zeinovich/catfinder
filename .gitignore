@@ -6,3 +6,4 @@ config.json
 image_buff/
 data/
 logs/
+__pycache__/
