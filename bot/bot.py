@@ -1,7 +1,6 @@
 import torch
 from torchvision.models import efficientnet_b2
 import cv2
-
 import telebot
 
 from datetime import datetime
@@ -118,7 +117,7 @@ def main():
         bot.reply_to(message, reply_msg)
         end = perf_counter()
         logging.info(f'Prediction took {(end - start) * 1000:.0f} ms')
-        
+
     bot.polling()
 
 if __name__ == '__main__':
