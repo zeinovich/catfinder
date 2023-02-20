@@ -43,6 +43,9 @@ class Predictor():
 
     def load_state_dict(self, state_dict):
         return self.model.load_state_dict(state_dict=state_dict)
+    
+    def eval(self):
+        return self.model.eval()
 
     @torch.no_grad()
     def preprocess(self, image) -> torch.Tensor:

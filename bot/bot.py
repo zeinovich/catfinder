@@ -73,8 +73,8 @@ def main():
     logging.debug('Model is read')
 
     state_dict = get_state_dict()
-    predictor.model.load_state_dict(state_dict)
-    predictor.model.eval()
+    predictor.load_state_dict(state_dict)
+    predictor.eval()
     
     logging.info('Model initialized')
     logging.debug('Model is set to eval mode')
@@ -100,9 +100,10 @@ def main():
         bot.reply_to(message, repl_text)
         
     @bot.message_handler(content_types=['photo'])
-    def predict(message):
+    def got_photo(message):
         start = perf_counter()
         logging.info(f'Got message in chat {message.chat.id}')
+
         file_id = message.photo[-1].file_id
         file_info = bot.get_file(file_id)
 
