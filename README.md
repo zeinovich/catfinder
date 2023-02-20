@@ -89,6 +89,10 @@ NB. MobileNet_V2 performed equally.
       return self.yolo
       
   are used to infer models architecture.
+ 
+### COMMANDS
+   
+   Bot has only 2 commands. /predict to tell you to send photo and /breeds to send you list of breeds it knows
   
   
 ## REQUIREMENTS
