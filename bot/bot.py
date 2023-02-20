@@ -1,13 +1,11 @@
 import torch
 from torchvision.models import efficientnet_b2
-from torchvision.transforms import Resize, Normalize
-import torch.nn as nn
 import cv2
-import torchvision.transforms.functional as TF
 
 import telebot
 
 from datetime import datetime
+from time import perf_counter
 import json
 import os
 from types import SimpleNamespace
@@ -97,13 +95,14 @@ def main():
         for index, name in classes.items():
             if index == 0:
                 continue
-            
+
             repl_text += f'{index}. {name.title()}\n'
 
         bot.reply_to(message, repl_text)
         
     @bot.message_handler(content_types=['photo'])
     def predict(message):
+        start = perf_counter()
         logging.info(f'Got message in chat {message.chat.id}')
         file_id = message.photo[-1].file_id
         file_info = bot.get_file(file_id)
@@ -117,7 +116,9 @@ def main():
 
         reply_msg = predictor.get_message(classes)
         bot.reply_to(message, reply_msg)
-
+        end = perf_counter()
+        logging.info(f'Prediction took {(end - start) * 1000:.0f} ms')
+        
     bot.polling()
 
 if __name__ == '__main__':
