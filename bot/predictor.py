@@ -104,17 +104,17 @@ class Predictor():
         classes: dict
         Returns: str
         '''
-        if self.pred is None:
+        if self._pred is None:
             logging.warning('Calling get_message on None prediction')
             return
 
-        class_name = classes[self.pred]
+        class_name = classes[self._pred]
 
         if class_name != '<NEG>':
-            msg = f"I think it's {class_name.title()} ({self.proba * 100:.2f}%)"
+            msg = f"I think it's {class_name.title()} ({self._proba * 100:.2f}%)"
 
         else:
-            msg = f"I can't see cat or dog of a breed I know ({self.proba * 100:.2f}%)"
+            msg = f"I can't see cat or dog of a breed I know ({self._proba * 100:.2f}%)"
 
         logging.debug(f'Pred message: {msg}')
 

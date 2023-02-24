@@ -19,7 +19,7 @@ def get_logg(level=logging.INFO):
         level=level,
         format="%(asctime)s %(levelname)s %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
-        filename=f'C:/Users/nikit/catfinder/logs/log_{datetime.date(datetime.now())}.log'
+        filename=f'logs/log_{datetime.date(datetime.now())}.log'
     )
 
     logger = logging.getLogger(name='zeinovich')
