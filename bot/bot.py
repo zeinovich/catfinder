@@ -43,10 +43,10 @@ def get_state_dict():
     return checkpoint['model_state_dict']
 
 def get_bboxes(input_image, class_name):
-    pass
+    logging.warning('Not implemented')
 
 def main():
-    logger = get_logg(logging.DEBUG)
+    logger = get_logg()
     logger.info('Logger initialized')
     
     logger.info(f'Dir: {os.getcwd()}')

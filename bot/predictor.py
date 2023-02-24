@@ -59,17 +59,12 @@ class Predictor():
 
         if not isinstance(image, torch.Tensor):
             x = TF.to_tensor(image)
-        logging.debug('Converted image to tensor')
 
         x = Resize(self.input_size)(x)
-        logging.debug('Resized image')
-
         x = Normalize(*self.normalization)(x)
-        logging.debug('Normalized image')
 
         x.unsqueeze_(0)
         logging.debug(f'Unsqueezed shape: {x.shape} ({type(x)})')
-        logging.info('Image preprocessed')
 
         return x
     
@@ -82,23 +77,18 @@ class Predictor():
 
         *to get predictions call get_preds()
         '''
-        input_image = self.preprocess(input_image)
         logging.info('Predicting')
+        input_image = self.preprocess(input_image)
 
         input_image.to(self.device)
-        logging.info('Got input')
-
         output = self.model(input_image)
-        logging.info('Got output from model')
         logging.debug(f'{output=}')
         
         softmax = torch.softmax(output, 1)
-        logging.info('Applied softmax on output')
         logging.debug(f'{softmax=}')
 
         proba_pred = torch.max(softmax, 1)
         self._proba, self._pred = proba_pred[0].detach().cpu().numpy()[0], proba_pred[1].detach().cpu().numpy()[0]
-        logging.info('Got proba and pred from torch.max')
         logging.debug(f'{self._proba=}  {self._pred=}')
 
     def get_preds(self):
