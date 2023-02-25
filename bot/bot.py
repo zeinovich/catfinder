@@ -10,25 +10,39 @@ import os
 from types import SimpleNamespace
 import logging
 import numpy as np
+import socket
+import platform
 
 from predictor import Predictor
 
 def get_logg(level=logging.INFO):
 
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s %(levelname)s %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        filename=f'logs/log_{datetime.date(datetime.now())}.log'
-    )
+    log_formatter = logging.Formatter(fmt="%(asctime)s %(levelname)s %(message)s",
+                                      datefmt="%Y-%m-%d %H:%M:%S")
+    
+    log_file = f'./logs/catfinder_{datetime.date(datetime.now())}.log'
+
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setFormatter(log_formatter)   
+    file_handler.setLevel(level)
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(log_formatter)
+    stream_handler.setLevel(level)
 
     logger = logging.getLogger(name='zeinovich')
     logger.setLevel(level)
 
+    if (logger.hasHandlers()):
+        logger.handlers.clear()
+
+    logger.addHandler(file_handler)
+    logger.addHandler(stream_handler)
+
     return logger
 
 def load_config() -> dict:
-    with open('config.json') as config_file:
+    with open('./config.json') as config_file:
         return SimpleNamespace(**json.load(config_file))
 
 def get_classes() -> dict:
@@ -58,30 +72,36 @@ def main():
 
     global device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    logging.info(f'Device: {device}')
+    logger.info(f'{device=}')
 
     classes = get_classes()
-    logging.info(f'Classes are read')
-    logging.debug(f'{classes=}')
+    logger.info(f'Classes are read')
+    logger.debug(f'{classes=}')
 
     bot = telebot.TeleBot(config.BOT_TOKEN)
-    logging.info('Bot initialized')
+    logger.info('Bot initialized')
 
     base_model = efficientnet_b2()
     predictor = Predictor(base_model)
 
-    logging.debug('Model is read')
+    logger.debug('Model is read')
 
     state_dict = get_state_dict()
     predictor.load_state_dict(state_dict)
     predictor.eval()
-    
-    logging.info('Model initialized')
-    logging.debug('Model is set to eval mode')
+    logger.info(f'{predictor.input_size=}   {predictor.normalization=}')
+    logger.debug('Model is set to eval mode')
+
+    hostname = socket.gethostname()
+    ip_addr = socket.gethostbyname(hostname)
+
+    logger.info(f'Started {platform.system()} {platform.release()} IP: {ip_addr}')
+    bot.send_message(config.BOT_OWNER, f'{datetime.now()} \n{platform.system()} {platform.release()} \nIP: {ip_addr}')
 
     #BOT CODE
     @bot.message_handler(commands=['start'])
     def send_welcome(message):
+        logger.info(f'{message.chat.id} -> /start')
         bot.reply_to(message, "Welcome to the bot")
 
     @bot.message_handler(commands=['predict'])
@@ -90,6 +110,7 @@ def main():
 
     @bot.message_handler(commands=['breeds'])
     def print_breeds(message):
+        logger.info(f'{message.chat.id} -> /breeds')
         repl_text = ''
         for index, name in classes.items():
             if index == 0:
@@ -102,7 +123,7 @@ def main():
     @bot.message_handler(content_types=['photo'])
     def got_photo(message):
         start = perf_counter()
-        logging.info(f'Got message in chat {message.chat.id}')
+        logger.info(f'{message.chat.id} -> photo')
 
         file_id = message.photo[-1].file_id
         file_info = bot.get_file(file_id)
@@ -117,7 +138,8 @@ def main():
         reply_msg = predictor.get_message(classes)
         bot.reply_to(message, reply_msg)
         end = perf_counter()
-        logging.info(f'Prediction took {(end - start) * 1000:.0f} ms')
+
+        logger.info(f'ETA={(end - start) * 1000:.0f} ms')
 
     bot.polling()
 

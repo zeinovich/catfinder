@@ -29,10 +29,8 @@ class Predictor():
 
         if normalization is None:
             self.normalization = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        logging.info(f'{self.input_size=}   {self.normalization=}')
 
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        logging.info(f'Device: {self.device}')
 
         self.model.classifier = nn.Sequential(
                                               nn.Dropout(p=0.3, inplace=True),
@@ -55,8 +53,6 @@ class Predictor():
         Returns: torch.Tensor 
         '''
 
-        logging.info('Preprocessing')
-
         if not isinstance(image, torch.Tensor):
             x = TF.to_tensor(image)
 
@@ -64,7 +60,6 @@ class Predictor():
         x = Normalize(*self.normalization)(x)
 
         x.unsqueeze_(0)
-        logging.debug(f'Unsqueezed shape: {x.shape} ({type(x)})')
 
         return x
     
@@ -77,7 +72,7 @@ class Predictor():
 
         *to get predictions call get_preds()
         '''
-        logging.info('Predicting')
+        
         input_image = self.preprocess(input_image)
 
         input_image.to(self.device)
