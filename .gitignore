@@ -7,3 +7,5 @@ image_buff/
 data/
 logs/
 __pycache__/
+*.env
+_bot.py

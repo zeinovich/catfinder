@@ -1,6 +1,0 @@
-{
-    "IMG_SIZE": 224,
-    "MODEL_PATH": "./models/efnet_b2.tar", 
-    "CLASSES": "./classes/breed_dict.json",
-    "BOT_TOKEN": "BOT_TOKEN"
-}
