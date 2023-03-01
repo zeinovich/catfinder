@@ -13,27 +13,44 @@ For now base classification model is EfficientNet_B2 (weights=IMAGENET1K). Class
 
     nn.Sequential(
                   nn.Dropout(p=0.3, inplace=True),
-                  nn.Linear(in_features=1408, out_features=38, bias=True)
+                  nn.Linear(in_features=1408, out_features=13, bias=True)
                  )
                  
 NB. MobileNet_V2 performed equally.
 
 ### DATASET
-  Breed classification dataset - OxfordIIITPet. It contains 37 breeds of cats and dogs. Another datasets are added in order to cover as much feature space as possible. Those are DTD, StanfordCars, Humans_vs_Horses, CelebA and AnimalDataset. Their data represent 38th class (NEG). From each 100 datapoints are sampled and then augmented to get total 400 datapoints per dataset. OxfordIIITPet also augmented 3 times for each datapoint. 
+  Breed classification dataset - OxfordIIITPet. It contains 37 breeds of cats and dogs. We use only 12 cat breeds. Another datasets are added in order to cover as much feature space as possible. Those are StanfordCars, CelebA, AnimalDataset, House_Indoors_Scenes. Their data represent 13th class (NEG). From each 100 datapoints are sampled and then augmented to get total 400 datapoints per dataset. OxfordIIITPet also augmented 3 times for each datapoint. 
   Augmentation is done by albumentations. Steps are 
   
-    A.HueSaturationValue(p=0.5),
-    A.RandomBrightnessContrast(p=0.5),
-    A.RandomGamma(p=0.5),
-    A.Flip(p=0.5),
-    A.Rotate(p=0.5),
-    A.MultiplicativeNoise(multiplier=[0.5, 1.5], elementwise=True, per_channel=True, p=0.5),
-    A.ShiftScaleRotate(shift_limit=0.0625, rotate_limit=20, p=0.5),
-    A.Transpose(p=0.5),
-    A.RandomFog(fog_coef_upper=0.5, fog_coef_lower=0.1)
+    transform = A.Compose([
+        A.RandomRotate90(),
+        A.Flip(),
+        A.Transpose(),
+        A.OneOf([
+            A.GaussNoise(),
+        ], p=0.2),
+        A.OneOf([
+            A.MotionBlur(p=.2),
+            A.MedianBlur(blur_limit=3, p=0.1),
+            A.Blur(blur_limit=3, p=0.1),
+        ], p=0.2),
+        A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=45, p=0.2),
+        A.OneOf([
+            A.OpticalDistortion(p=0.3),
+            A.GridDistortion(p=.1),
+            A.PiecewiseAffine(p=0.3),
+        ], p=0.2),
+        A.OneOf([
+            A.CLAHE(clip_limit=2),
+            A.Sharpen(),
+            A.Emboss(),
+            A.RandomBrightnessContrast(),            
+        ], p=0.3),
+        A.HueSaturationValue(p=0.3),
+    ])
   
 ### TRAINING
-  Training is done in GoogleColab. Training consisted of 650 batches (BATCH_SIZE=32). Transformations are applied
+  Training is done in GoogleColab. Training consisted of 460 batches (BATCH_SIZE=32). Transformations are applied
   
     transforms.Resize(255),
     transforms.CenterCrop(224),
@@ -49,17 +66,14 @@ NB. MobileNet_V2 performed equally.
   
   Also checkpoint callback is used and best model is occassionally saved. Minimal val_loss delta of 1e-2 is taken.
   
-  Training took 50 epochs (~60 mins). Results after training are
+  Training took 37 epochs (~100 mins). Results after training are
   
-    min_loss = 0.3850
-    best_acc = 0.93
-    test_acc = 0.92
+    min_loss = 0.3468
+    best_acc = 0.91
+    test_acc = 0.96
     See ./notebooks/training_torch_multiclass.ipynb for detailed classification report
     
-  However, training accuracy never went any higher than 63% which talks for excessive augmentation.
-  Model seems to struggle with american pit bull terrier, which often get confused with stafforshire bull terrier. IDK it's the same breed tell me difference)
-  
-  ![image](https://user-images.githubusercontent.com/114425094/220111530-cadb99c2-e177-4f5d-922c-14019ddf78a0.png)
+   Training and validation accuracies are almost the same, so model neither overfit nor underfit. Logits that classifier outputs are seemingly normally distributed which tell us that our gradients don't die on a way. 
   
 ### DETECTION
 
@@ -92,21 +106,27 @@ NB. MobileNet_V2 performed equally.
  
 ### COMMANDS
    
-   Bot has only 2 commands. /predict to tell you to send photo and /breeds to send you list of breeds it knows
+   Bot Commands.
+   
+      /start - To send hello message
+      /predict - Helper command just outputs message
+      /help - Help
+      /info - Info
   
   
 ## REQUIREMENTS
+      
+      python>=3.9
+      
+      BOT REQS
+      numpy==1.23.5
+      opencv_python==4.7.0.68
+      torch==1.13.1
+      torchvision==0.14.1
 
-    Python 3.9
-    numpy 1.23.5
-    torch 1.13.1
-    torchvision 0.14.1
-    opencv_python 4.7.0.68 
-    pyTelegramBotAPI 4.10.0
-
-### Requirements for training
-    scikit-learn 1.2.1
-    matplotlib 3.6.0
-    seaborn 0.12.2
+      NOTEBOOK REQS
+      matplotlib==3.6.0
+      seaborn==0.12.2
+      scikit-learn==1.2.1
+      tqdm==4.64.1
     
-    See requirements.txt
